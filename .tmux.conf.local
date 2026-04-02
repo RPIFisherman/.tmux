@@ -410,6 +410,55 @@ bind m run "cut -c3- '#{TMUX_CONF}' | sh -s _toggle_mouse" \; display 'mouse #{?
 # move status line to top
 #set -g status-position top
 
+# >>> user customizations merged from ~/.tmux.conf
+
+# increase history size
+set -g history-limit 10000
+
+# force Vi mode
+set -g status-keys vi
+set -g mode-keys vi
+
+# copy-mode-vi behavior: stay in copy mode, vim-like y/p
+bind-key -T copy-mode-vi v send-keys -X begin-selection
+bind-key -T copy-mode-vi y send-keys -X copy-selection
+bind-key -T copy-mode-vi Enter send-keys -X copy-selection
+bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-selection
+bind-key -T copy-mode-vi DoubleClick1Pane select-pane \; send-keys -X select-word \; run-shell -d 0.3 \; send-keys -X copy-selection
+bind-key -T copy-mode-vi TripleClick1Pane select-pane \; send-keys -X select-line \; run-shell -d 0.3 \; send-keys -X copy-selection
+
+# Optional: Paste with 'p'
+bind-key p paste-buffer
+
+# extra commands for interacting with the ICCCM clipboard
+bind C-c run "tmux save-buffer - | xclip -i -sel clipboard"
+bind C-v run "tmux set-buffer \"$(xclip -o -sel clipboard)\"; tmux paste-buffer"
+
+# resize panes a bit faster
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# allow tmux / programs to rename windows
+set -g allow-rename on
+
+# start with mouse mode enabled
+set -g mouse on
+
+# OSC 52 + image.nvim
+set -gq allow-passthrough on
+set -g set-clipboard on
+set-option -g focus-events off
+
+# plugins
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @continuum-restore 'on'
+set -g @resurrect-processes '"~nvim" ssh psql mysql bpytop "git log" "~openclaw"'
+
+# <<< end of user customizations
 
 # -- tpm -----------------------------------------------------------------------
 

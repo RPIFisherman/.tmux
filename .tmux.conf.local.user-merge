@@ -1,0 +1,65 @@
+# -- user customizations -------------------------------------------------------
+
+# this is the place to override or undo settings
+
+# from old ~/.tmux.conf
+
+# history size
+set -g history-limit 10000
+
+# vi mode for copy mode and status keys
+setw -g mode-keys vi
+set -g status-keys vi
+
+# moving between panes with vim movement keys (already present in base, keep here if you ever disable them there)
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+
+# y and p as in vim in copy-mode-vi
+bind-key -T copy-mode-vi v send-keys -X begin-selection
+bind-key -T copy-mode-vi y send-keys -X copy-selection
+bind-key -T copy-mode-vi Enter send-keys -X copy-selection
+bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-selection
+bind-key -T copy-mode-vi DoubleClick1Pane select-pane \; send-keys -X select-word \; run-shell -d 0.3 \; send-keys -X copy-selection
+bind-key -T copy-mode-vi TripleClick1Pane select-pane \; send-keys -X select-line \; run-shell -d 0.3 \; send-keys -X copy-selection
+
+# Optional: Paste with 'p'
+bind-key p paste-buffer
+
+# extra commands for interacting with the ICCCM clipboard
+bind C-c run "tmux save-buffer - | xclip -i -sel clipboard"
+bind C-v run "tmux set-buffer \"$(xclip -o -sel clipboard)\"; tmux paste-buffer"
+
+# resize panes with vim movement keys
+bind -r H resize-pane -L 5
+bind -r J resize-pane -D 5
+bind -r K resize-pane -U 5
+bind -r L resize-pane -R 5
+
+# don't rename windows automatically
+set -g allow-rename on
+
+# moving between windows with vim movement keys
+bind -r C-h select-window -t :-
+bind -r C-l select-window -t :+
+
+# tpm & plugins
+set -g @plugin 'tmux-plugins/tpm'
+set -g @plugin 'tmux-plugins/tmux-sensible'
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+
+# Optional: Enable automatic restore on tmux server start
+set -g @continuum-restore 'on'
+set -g @resurrect-processes '"~nvim" ssh psql mysql bpytop "git log" "~openclaw"'
+
+# Pane focus by mouse
+set -g mouse on
+
+# Use image.nvim / OSC 52 etc
+set -gq allow-passthrough on
+set -g set-clipboard on
+set-option -g focus-events off
+

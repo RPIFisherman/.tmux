@@ -77,6 +77,7 @@ install() {
     TMUX_CONF="$HOME/.tmux.conf"
   fi
   TMUX_CONF_LOCAL="$TMUX_CONF.local"
+  mkdir -p "$HOME/.local/bin"
 
   OH_MY_TMUX_CLONE_PATH="${XDG_DATA_HOME:-$HOME/.local/share}/tmux/oh-my-tmux"
   if [ -d "$OH_MY_TMUX_CLONE_PATH" ]; then
@@ -108,6 +109,15 @@ install() {
   fi
   if is_true "$DRY_RUN" || cp "$OH_MY_TMUX_CLONE_PATH/.tmux.conf.local" "$TMUX_CONF_LOCAL"; then
     printf '✅ Copied %s → %s\n' "${OH_MY_TMUX_CLONE_PATH/#"$HOME"/'~'}/.tmux.conf.local" "${TMUX_CONF_LOCAL/#"$HOME"/'~'}" >&2
+  fi
+  if is_true "$DRY_RUN" || ln -s -f "$OH_MY_TMUX_CLONE_PATH/.tmux-agent-status.sh" "$HOME/.tmux-agent-status.sh"; then
+    printf '✅ Symlinked %s → %s\n' "~/.tmux-agent-status.sh" "${OH_MY_TMUX_CLONE_PATH/#"$HOME"/'~'}/.tmux-agent-status.sh" >&2
+  fi
+  if is_true "$DRY_RUN" || ln -s -f "$OH_MY_TMUX_CLONE_PATH/.tmux-agent-popup.sh" "$HOME/.tmux-agent-popup.sh"; then
+    printf '✅ Symlinked %s → %s\n' "~/.tmux-agent-popup.sh" "${OH_MY_TMUX_CLONE_PATH/#"$HOME"/'~'}/.tmux-agent-popup.sh" >&2
+  fi
+  if is_true "$DRY_RUN" || ln -s -f "$OH_MY_TMUX_CLONE_PATH/agent-wrapper.sh" "$HOME/.local/bin/agent-wrapper.sh"; then
+    printf '✅ Symlinked %s → %s\n' "~/.local/bin/agent-wrapper.sh" "${OH_MY_TMUX_CLONE_PATH/#"$HOME"/'~'}/agent-wrapper.sh" >&2
   fi
 
   tmux() {

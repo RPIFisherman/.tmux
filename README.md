@@ -159,6 +159,8 @@ Features
 
   - `C-a` acts as secondary prefix, while keeping default `C-b` prefix
   - Visual theme inspired by [Powerline][]
+  - Built-in AI agent status line (`WAIT`, `ERR`, `DONE`, `WORK`) with brief/normal/verbose modes
+  - Agent dashboard popup on `<prefix> s` and plain session chooser on `<prefix> S`
   - [Maximize any pane to a new window with `<prefix> +`][maximize-pane]
   - Mouse mode toggle with `<prefix> m`
   - Laptop battery status line information
@@ -224,6 +226,10 @@ This configuration uses the following bindings:
   - `<prefix> r` reloads the configuration
   - `C-l` clears both the screen **and** the tmux history
 
+  - `<prefix> s` opens the AI agent status dashboard popup
+  - `<prefix> S` opens the plain session chooser tree
+  - `<prefix> M` cycles the AI status line mode between brief, normal, and verbose
+
   - `<prefix> C-c` creates a new session
   - `<prefix> C-f` lets you switch to another session by name
 
@@ -252,6 +258,33 @@ This configuration uses the following bindings:
 Additionally, `copy-mode-vi` matches [my own Vim configuration]
 
 [my own Vim configuration]: https://github.com/gpakosz/.vim.git
+
+AI agent status files and defaults
+----------------------------------
+
+This fork ships a tmux agent monitor with three helper scripts:
+
+- `~/.tmux-agent-status.sh` — status-line and tree token provider
+- `~/.tmux-agent-popup.sh` — popup dashboard shown by `<prefix> s`
+- `~/.local/bin/agent-wrapper.sh` — optional wrapper for file-based agent status
+
+The status script auto-generates default agent configs under:
+
+- `~/.config/tmux-agent-status/agents/*.conf`
+
+These files control process-name matching, fallback identity hints, and regexes
+for WAIT / ERR / DONE detection. Add a new `.conf` file to support another
+coding agent without editing the main status script.
+
+If you want higher-reliability status updates, wrap your agent command:
+
+```bash
+alias claude='agent-wrapper.sh claude claude'
+alias opencode='agent-wrapper.sh opencode opencode'
+```
+
+The wrapper writes short-lived status files under `$XDG_RUNTIME_DIR/tmux-agent-status/`
+so tmux can report WORK / DONE / ERR without relying only on terminal capture.
 
 Bindings for `copy-mode-vi`:
 

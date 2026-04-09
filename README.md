@@ -226,8 +226,8 @@ This configuration uses the following bindings:
   - `<prefix> r` reloads the configuration
   - `C-l` clears both the screen **and** the tmux history
 
-  - `<prefix> s` opens the AI agent status dashboard popup
-  - `<prefix> S` opens the same AI agent status dashboard popup
+  - `<prefix> s` opens the plain session chooser tree
+  - `<prefix> S` opens the AI agent status dashboard popup
   - `<prefix> M` cycles the AI status line mode between brief, normal, and verbose
 
   - `<prefix> C-c` creates a new session

@@ -142,6 +142,117 @@ install() {
 
   printf '\n' >&2
   printf '🎉 Oh my tmux! successfully installed 🎉\n' >&2
+
+  # ── Agent Status Dashboard (optional) ──────────────────────────────
+  install_agent_dashboard
+}
+
+install_agent_dashboard() {
+  AGENT_DASHBOARD_REPO=${AGENT_DASHBOARD_REPO:-https://github.com/RPIFisherman/agents-status.git}
+  AGENT_DASHBOARD_DIR="$HOME/projects/agents-status"
+
+  printf '\n' >&2
+  printf '🤖 Agent Status Dashboard\n' >&2
+  printf '   A web dashboard for monitoring AI coding agents in tmux\n' >&2
+  printf '   (Claude Code, Codex, Gemini CLI, OpenCode, OpenClaw)\n' >&2
+  printf '\n' >&2
+
+  while :; do
+    printf '   Install Agent Status Dashboard? [Yes/No] > ' >&2
+    read -r answer < /dev/tty 2>/dev/null || answer="no"
+    case $(printf '%s\n' "$answer" | tr '[:upper:]' '[:lower:]') in
+      y|yes) break ;;
+      n|no)
+        printf '   ⏭️  Skipped Agent Status Dashboard\n' >&2
+        return 0
+        ;;
+    esac
+  done
+
+  printf '\n' >&2
+
+  # Check Python + FastAPI
+  if ! python3 --version >/dev/null 2>&1; then
+    printf '   ❌ Python 3 not found, skipping dashboard install\n' >&2
+    return 1
+  fi
+  if ! python3 -c "import fastapi, uvicorn" 2>/dev/null; then
+    printf '   📦 Installing FastAPI + Uvicorn...\n' >&2
+    if ! is_true "$DRY_RUN"; then
+      pip install --quiet fastapi uvicorn 2>&1 | tail -1
+    fi
+  fi
+
+  # Clone or update
+  if [ -d "$AGENT_DASHBOARD_DIR/.git" ]; then
+    printf '   ⬇️  Updating existing agents-status repo...\n' >&2
+    if ! is_true "$DRY_RUN"; then
+      git -C "$AGENT_DASHBOARD_DIR" pull --quiet origin master 2>/dev/null || true
+    fi
+  else
+    printf '   ⬇️  Cloning agents-status repository...\n' >&2
+    if ! is_true "$DRY_RUN"; then
+      mkdir -p "$(dirname "$AGENT_DASHBOARD_DIR")"
+      if ! git clone -q --single-branch "$AGENT_DASHBOARD_REPO" "$AGENT_DASHBOARD_DIR"; then
+        printf '   ❌ Failed to clone agents-status\n' >&2
+        return 1
+      fi
+    fi
+  fi
+
+  # Install agent configs
+  AGENT_CONF_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/tmux-agent-status/agents"
+  if ! is_true "$DRY_RUN"; then
+    mkdir -p "$AGENT_CONF_DIR"
+    for conf in "$AGENT_DASHBOARD_DIR"/configs/*.conf; do
+      [ -f "$conf" ] || continue
+      target="$AGENT_CONF_DIR/$(basename "$conf")"
+      if [ ! -f "$target" ]; then
+        cp "$conf" "$target"
+        printf '   ✅ Installed %s\n' "$(basename "$conf")" >&2
+      else
+        printf '   ⏭️  %s already exists, skipping\n' "$(basename "$conf")" >&2
+      fi
+    done
+  fi
+
+  # Install Claude Code hooks (if Claude is available)
+  if command -v claude >/dev/null 2>&1; then
+    CLAUDE_HOOKS_DIR="$HOME/.claude/hooks"
+    if ! is_true "$DRY_RUN"; then
+      mkdir -p "$CLAUDE_HOOKS_DIR"
+      cp "$AGENT_DASHBOARD_DIR/hooks/tmux-agent-state.sh" "$CLAUDE_HOOKS_DIR/"
+      chmod +x "$CLAUDE_HOOKS_DIR/tmux-agent-state.sh"
+      printf '   ✅ Installed Claude Code hook → %s\n' "~/.claude/hooks/tmux-agent-state.sh" >&2
+    fi
+
+    # Merge hooks into settings.json if not already present
+    CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+    if [ -f "$CLAUDE_SETTINGS" ]; then
+      if ! grep -q "tmux-agent-state" "$CLAUDE_SETTINGS" 2>/dev/null; then
+        if command -v jq >/dev/null 2>&1; then
+          if ! is_true "$DRY_RUN"; then
+            jq -s '.[0] * .[1]' "$CLAUDE_SETTINGS" "$AGENT_DASHBOARD_DIR/configs/settings.fragment.json" \
+              > "$CLAUDE_SETTINGS.new" 2>/dev/null \
+              && mv "$CLAUDE_SETTINGS.new" "$CLAUDE_SETTINGS"
+            printf '   ✅ Merged hooks into %s\n' "~/.claude/settings.json" >&2
+          fi
+        else
+          printf '   ⚠️  jq not found — please manually merge hooks from configs/settings.fragment.json\n' >&2
+        fi
+      else
+        printf '   ⏭️  Claude hooks already configured\n' >&2
+      fi
+    fi
+  fi
+
+  printf '\n' >&2
+  printf '   🎉 Agent Status Dashboard installed!\n' >&2
+  printf '   Start: cd %s && python3 server.py\n' "${AGENT_DASHBOARD_DIR/#"$HOME"/'~'}" >&2
+  printf '   Open:  http://localhost:7890\n' >&2
+  printf '\n' >&2
+  printf '   Tip: Run in a dedicated tmux window for persistence:\n' >&2
+  printf '     tmux new-window -n dashboard -c %s "exec python3 server.py"\n' "${AGENT_DASHBOARD_DIR/#"$HOME"/'~'}" >&2
 }
 
 if [ -p /dev/stdin ]; then

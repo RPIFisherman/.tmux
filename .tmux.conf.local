@@ -451,6 +451,33 @@ set -gq allow-passthrough on
 set -g set-clipboard on
 set-option -g focus-events off
 
+# AI agent status line + dashboard
+set -g window-status-format '#[fg=colour15]#I:#W#F'
+set -g window-status-current-format '#[bold fg=colour51]#I:#W#F'
+set -g window-status-activity-style 'fg=colour226,bold'
+set -g window-status-bell-style 'fg=colour196,bold'
+set -g bell-action any
+set -g status-interval 5
+set -g status-right-length 240
+set -g @agent_status_mode 'normal'
+set -g @agent_status_done_ttl '180'
+set -g status-right '#(~/.tmux-agent-status.sh --all --mode "#{@agent_status_mode}")'
+bind-key M run-shell 'mode="$(tmux show-options -gqv @agent_status_mode 2>/dev/null || true)"; case "$mode" in brief) next=normal ;; normal) next=verbose ;; *) next=brief ;; esac; tmux set-option -gq @agent_status_mode "$next"; tmux display-message "Agent status mode: $next"' #!important
+unbind-key s #!important
+unbind-key S #!important
+unbind-key w #!important
+bind-key s display-popup -E -w 80% -h 80% ~/.tmux-agent-popup.sh #!important
+bind-key S display-popup -E -w 80% -h 80% ~/.tmux-agent-popup.sh #!important
+bind-key w choose-tree -Zw #!important
+bind-key A command-prompt -p 'Agent label' 'set -p @agent_label "%%"' #!important
+bind-key T command-prompt -p 'Pane title' 'select-pane -T "%%"' #!important
+
+# Pane border labels
+set -g pane-border-style 'fg=colour51'
+set -g pane-active-border-style 'fg=colour46'
+set -g pane-border-format '#{?pane_active,#[bold fg=colour46],#[fg=colour51]}#{pane_index} #{pane_title}#[default]'
+set-hook -g window-layout-changed 'if-shell -F "#{==:#{window_panes},1}" "set pane-border-status off" "set pane-border-status top"'
+
 # plugins
 set -g @plugin 'tmux-plugins/tmux-sensible'
 set -g @plugin 'tmux-plugins/tmux-resurrect'

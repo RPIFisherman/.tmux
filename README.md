@@ -227,7 +227,7 @@ This configuration uses the following bindings:
   - `C-l` clears both the screen **and** the tmux history
 
   - `<prefix> s` opens the AI agent status dashboard popup
-  - `<prefix> S` opens the plain session chooser tree
+  - `<prefix> S` opens the same AI agent status dashboard popup
   - `<prefix> M` cycles the AI status line mode between brief, normal, and verbose
 
   - `<prefix> C-c` creates a new session
@@ -271,6 +271,10 @@ This fork ships a tmux agent monitor with three helper scripts:
 The status script auto-generates default agent configs under:
 
 - `~/.config/tmux-agent-status/agents/*.conf`
+
+This repo also ships example templates under:
+
+- `examples/agent-configs/*.conf`
 
 These files control process-name matching, fallback identity hints, and regexes
 for WAIT / ERR / DONE detection. Add a new `.conf` file to support another

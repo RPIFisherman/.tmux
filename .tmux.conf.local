@@ -466,7 +466,7 @@ bind-key M run-shell 'mode="$(tmux show-options -gqv @agent_status_mode 2>/dev/n
 unbind-key s #!important
 unbind-key S #!important
 unbind-key w #!important
-bind-key s display-popup -E -w 80% -h 80% ~/.tmux-agent-popup.sh #!important
+bind-key s choose-tree -Zs #!important
 bind-key S display-popup -E -w 80% -h 80% ~/.tmux-agent-popup.sh #!important
 bind-key w choose-tree -Zw #!important
 bind-key A command-prompt -p 'Agent label' 'set -p @agent_label "%%"' #!important
